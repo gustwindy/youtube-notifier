@@ -4,10 +4,9 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
-directories = "6.0.0"
-lexopt = "0.3.2"
+ureq = { version="3.4.2", features=["json"]}
 notify-rust = "4.18.1"
+directories = "6.0.0"
 roxmltree = "0.21.1"
 serde = "1.0.229"
-ureq = { version="3.4.2", features=["json"]}
-webbrowser = "1.2.4"
+lexopt = "0.3.2"

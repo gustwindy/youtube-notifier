@@ -3,12 +3,12 @@ use std::collections::HashSet;
 use notify_rust::Notification;
 use directories::ProjectDirs;
 use std::io::{BufRead,Write};
+use std::process::Command;
 use std::fs::OpenOptions;
 use std::time::Duration;
 use serde::{Serialize};
 use std::path::Path;
 use ureq::Agent;
-use webbrowser;
 use std::fs;
 use std::io;
 
@@ -86,7 +86,7 @@ fn iterate_videos(agent: &Agent, args: Args, xml: &Document, seen: &mut io::BufR
             let url = format!("https://www.youtube.com/watch?v={id}");
 
             if args.should_open_in_browser {
-                webbrowser::open(&url).ok();
+                Command::new("xdg-open").arg(&url).output().ok();
             }
             if let Some(webhook) = &args.webhook {
                 let mut content = "0";
