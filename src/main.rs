@@ -17,7 +17,9 @@ struct Args {
     webhook: Option<String>,
     user_id: Option<String>,
     should_open_in_browser: bool,
-    helped: bool
+    helped: bool,
+    verbose: bool,
+    super_verbose: bool,
 }
 
 fn get_args() -> Result<Args, lexopt::Error> {
@@ -28,7 +30,9 @@ fn get_args() -> Result<Args, lexopt::Error> {
         webhook: None,
         user_id: None,
         should_open_in_browser: false,
-        helped: false
+        helped: false,
+        verbose: false,
+        super_verbose: false
     };
 
     let mut parser = lexopt::Parser::from_env();
@@ -43,11 +47,18 @@ fn get_args() -> Result<Args, lexopt::Error> {
             Short('b') | Long("open-browser") => {
                 sent.should_open_in_browser = true;
             }
+            Short('+') | Long("verbose+") => {
+                sent.verbose = true;
+                sent.super_verbose = true;
+            }
+            Short('v') | Long("verbose") => {
+                sent.verbose = true;
+            }
             Value(val) => {
                 sent.yt_channel_id = val.string()?;
             }
             Short('h') | Long("help") => {
-                println!("Usage: yt-notify [-w|--webhook-url=DISCORD_URL] [-u|--user-id=DISCORD_ID] [-b|--open-browser] <YOUTUBE_CHANNEL_ID>");
+                println!("Usage: yt-notify [-w|--webhook-url=DISCORD_URL] [-u|--user-id=DISCORD_ID] [-b|--open-browser] [-v|--verbose] [-+|--verbose+] <YOUTUBE_CHANNEL_ID>");
                 sent.helped = true;
             }
             _ => return Err(arg.unexpected())
@@ -122,12 +133,19 @@ fn run(dir: &Path, agent: Agent, args: Args) -> Option<()> { // this is probably
     let mut reader = io::BufReader::new(&seen);
     let mut writer = io::BufWriter::new(&seen);
 
-    println!("{}",dir.to_str()?);
-    println!("{}",seen_path.to_str()?);
+    if args.verbose {
+        println!("{}",dir.to_str()?);
+        println!("{}",seen_path.to_str()?);
+    }
 
     if let Some(response) = fetch(format!("https://www.youtube.com/feeds/videos.xml?channel_id={channel_id}"), &agent) {
         let xml = &response;
-        println!("gotcha");
+        if args.verbose {
+            println!("got response");
+        }
+        if args.super_verbose {
+            println!("{}", xml);
+        }
         if let Ok(res) = Document::parse(xml) {
             iterate_videos(&agent, args, &res, &mut reader, &mut writer);
         }
